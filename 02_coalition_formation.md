@@ -118,7 +118,11 @@ Short-lived listen advertisements may be signed by "makers" using their online k
 
 Alternatively, negotiation with listening but unaddressible UTXO owners can be made possible using an opt-in gossip layer. On this layer, it's permitted to broadcast partially accepted proposals. See below for a discussion of flood protection considerations in this setting.
 
-### Co-spend proposals
+Listen advertisements can specify constraints for proposals being entertained, indicating that proposals outside of the constrained subspace (see coalition proposal details below for specifics) are unacceptable at any price.
+
+Finally, listen advertisements also indicate the owner's willingness to serve as a validator node in transaction construction, as either demanding to be a one, opting in at the aggregator's discretion, or declining. The aggregator has an incentive be a validator (and to do so honestly), but is not required to.
+
+### Co-Spend proposals
 
 Co-spend proposals specify a set of outpoints of coins intended to be spent together. Fully accepted proposals take effect contingent on the conditions they specify, such as the range of feerates the offer is valid under, `nLocktime` ranges, or whether or not txid stability is required (i.e. only SegWit inputs). The effect of a proposal is some confidential redistribution of the input funds, e.g. fees negotiated between the transacting parties.
 
@@ -163,6 +167,8 @@ A coalition proposal is a special kind of co-spend proposal that aggregates toge
 Any peer may attempt to construct a coalition proposal by aggregating unanimously accepted co-spend proposals together, so long as it controls at least one of the online keys implicated in the aggregation. For rate limiting, the aggregator's key is made explicit, and the hash of this signature is used for flood control when gossipping the partially signed coalition proposal, much like the hash of ownership proofs.
 
 Unlike co-spend proposals, coalition proposals are accepted with a regular signature by the online key. This makes them tractable for aggregators to make coalition proposals that revise the payoff or omit peers who didn't accept. As discussed above, coalition proposals aren't mutually exclusive. If a peer rejects a coalition proposal due to the inclusion of a specific proposal, it may broadcast a counter final proposal of its own, so there's no mechanism for explicit rejection.
+
+A coalition proposal also specifies a concrete transaction construction protocol version, and commits to a specific set of listen advertisements associated with the specified UTXOs, which have either demanded or opted into serving as validators. These peers agree to allow other peers to connect to them and facilitate in gossip. Depending on the liveness requirements of byzantine agreement for the subsequent transaction construction protocol, the aggregator may specify validators at their discretion and named parties may accept or decline.
 
 #### Bootstrapping consensus for transaction construction
 
