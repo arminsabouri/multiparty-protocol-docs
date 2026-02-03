@@ -445,6 +445,30 @@ for liveness txouts must only be included if covered by txin funds, this ensures
 
 
 ---
+## Robust Overlay Network
+
+Permissionless open gossip network responsible for relaying peer information and collaborative tx construction protocol messages.
+
+Peers bootstrap into the network by publishing a BIP-322 ownership proof bound to an online communication key. These proofs are posted to a publicly accessible bulletin board (directory?) that serves as neutral semi-trusted bootstrap infrastructure. // TODO: explain how it is trusted
+
+When a transaction construction protocol instance begins, participants preferentially connect to their immediate listening counterparties. Each protocol instance therefore induces a sub-overlay tailored to that session rather than relying on a global overlay.
+
+An open design question is whether nodes should relay information for transaction-construction sessions in which they are not participants. Relaying improves connectivity and robustness but increases bandwidth costs for listening nodes.
+
+Peer eligibility can be gated by proof of UTXO ownership, but UTXOs are not identities. An adversary can shard funds across many outputs. Consequently, UTXOs function as a cost signal and rate-limiting primitive rather than a one-to-one identity mechanism.
+
+// TODO Explain peer messages (bip322 proofs, listening advertisments, finalize proposal).
+
+Nodes cannot practically cannot maintain a full membership view. In a dynamic byzantine setting with churn, peer sampling can be a itself be part of the attack vector. Random peer sampling and preferences over historical samples can mitigate such attacks. [Brahms](https://dl.acm.org/doi/pdf/10.1145/1400751.1400772) provides sub linear solution that converges to uniform random over time.
+
+The Brahm's solutions is two fold: 
+1. A rate limited gossip-based membership maintenance layer. Preventing an attacker from continuously flooding with dishonest listening node ids
+2. a local sampler that extracts unbiased samples from a biased stream.
+
+// TODO: how much of this is "free" if the overlay network uses lightning and/or bitcoin p2p network
+
+---
+
 
 permissionless network -> new gossip network where peers can start communicating TODO rephrase
 
