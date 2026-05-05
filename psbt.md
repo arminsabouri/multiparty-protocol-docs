@@ -71,6 +71,34 @@ TODO diagram for the combined state machine, indicate when downconversion (to v2
 
 TODO discuss scrubbing after signer and before combiner
 
+The new field types for distributed PSBT construction are as follows:
+
+### New global types
+
+TODO: specify byte order
+
+| Name | `keytype` | `keydata` | `keydata` Description | `valuedata` | `valuedata` Description |
+| --- | --- | --- | --- | --- | --- |
+| Transaction Unordered Flag | `PSBT_GLOBAL_TX_UNORDERED = TBD` | None | No key data | `<8-bit uint unorderedflag>` | Bitfield indicating unordered maps. Bit 0 indicates unordered inputs. Bit 1 indicates unordered outputs. |
+| Sort Seed | `PSBT_GLOBAL_SORT_SEED = TBD` | None | No key data | `<bytes globalseed>` | Random seed used to derive deterministic sort keys when explicit per-map sort keys are absent. |
+| Deterministic Sort Flag | `PSBT_GLOBAL_SORT_DETERMINISTIC = TBD` | None | No key data | `<8-bit uint sortflag>` | indicates sort keys must be deterministically derived and explicit `PSBT_IN_SORT_KEY` / `PSBT_OUT_SORT_KEY` fields are disallowed. |
+| Removed Input | `PSBT_GLOBAL_REMOVED_INPUT = TBD` | `<bytes input unique id>` | `PSBT_IN_UNIQUE_ID`  of an input removed from the logical input set. | None | No value data. |
+| Removed Output | `PSBT_GLOBAL_REMOVED_OUTPUT = TBD` | `<bytes output unique id>` | `PSBT_OUT_UNIQUE_ID` removed from the logical output set. | None | No value data. |
+
+### New per-input types
+
+| Name | `keytype` | `keydata` | `keydata` Description | `valuedata` | `valuedata` Description |
+| --- | --- | --- | --- | --- | --- |
+| Input Sort Key | `PSBT_IN_SORT_KEY = TBD` | None | No key data | `<bytes sort key>` | Arbitrary lexicographically comparable value used to order inputs. |
+| Input Unique ID | `PSBT_IN_UNIQUE_ID = TBD` | None | No key data | `<bytes unique id>` | Optional unique suffix for outpoint identity, used for input removal extensions. |
+
+### New per-output types
+
+| Name | `keytype` | `keydata` | `keydata` Description | `valuedata` | `valuedata` Description |
+| --- | --- | --- | --- | --- | --- |
+| Output Unique ID | `PSBT_OUT_UNIQUE_ID = TBD` | None | No key data | `<bytes unique id>` | Universally unique identifier for output map identity under unordered output semantics. |
+| Output Sort Key | `PSBT_OUT_SORT_KEY = TBD` | None | No key data | `<bytes sort key>` | Arbitrary lexicographically comparable value used to order outputs when transitioning from unordered to ordered mode. |
+
 ### PSBT identity and transaction effects
 
 The BIP 174 *Combiner* role specifies how to merge diverging copies of the same
@@ -184,6 +212,7 @@ prior to reserialization. This is easily accomplished by storing them in
 randomized hashmaps, keyed by their unique identifiers as defined below.
 
 TODO: rationale for shuffling
+
 - privacy
 - robustness
 
@@ -441,4 +470,3 @@ transaction, and therefore cannot be spent together.
 ## Backwards Compatibility
 
 ## Reference Implementation
-
