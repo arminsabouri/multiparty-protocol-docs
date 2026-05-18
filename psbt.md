@@ -37,7 +37,37 @@ a consistent PSBT which can subsequently be manipulated using the normal BIP
 
 ## Specification
 
-TODO diagram for the combined state machine, indicate when downconversion (to v2 or v0) can happen
+Example collaborative protocol (*N* wallets). **Creator** and **Constructor** share an empty PSBT with every wallet. Each wallet *i* runs the same pipeline below in parallel. **Combiner**, **Finalizer**, and **Extractor** fan in once all wallets have signed.
+
+```mermaid
+flowchart TB
+    subgraph init ["Creator / Constructor"]
+        EMPTY[empty PSBT]
+    end
+    EMPTY -->|Distribute to wallets| Pop
+
+    subgraph Wi ["Wallet i (i = 1..N)"]
+        direction TB
+        Pop[PSBT populate with Wallet i's inputs and outputs]
+        Pop -->|Send and join received PSBTs from other wallets| Join[PSBT populated with all wallets' inputs and outputs]
+        Join -->|cleared PSBT_GLOBAL_TX_UNORDERED bit| Clear[Sorted inputs and outputs]
+        subgraph us ["Updater / Signer"]
+            SIG[Wallet i's signed PSBT]
+        end
+        Clear -->|Downcast to BIP 370| SIG
+    end
+
+    subgraph combine ["Combiner"]
+        COMB[N signed PSBTs]
+    end
+
+    subgraph finish ["Finalizer / Extractor"]
+        SIGNED[signed tx]
+    end
+
+    SIG --> COMB
+    COMB --> SIGNED
+```
 
     creator -> constructor<modifiable, unordered> -> constructor<modifiable> (bip 370) -> updater -> signer -> combiner -> finalizer -> extractor
 
